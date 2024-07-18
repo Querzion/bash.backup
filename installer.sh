@@ -218,22 +218,13 @@ backup_configuration() {
         print_message "$RED" "Invalid tool specified. Exiting."
         exit 1
     fi
-
-    # Update GRUB configuration
-    if command_exists grub-mkconfig; then
-        local grub_cfg="/boot/grub/grub.cfg"
-
-        # Update GRUB configuration
-        print_message "$CYAN" "Updating GRUB configuration..."
-        sudo grub-mkconfig -o "$grub_cfg"
-        print_message "$GREEN" "GRUB configuration updated."
-    else
-        print_message "$YELLOW" "grub-mkconfig not found. Skipping GRUB configuration update."
-    fi
 }
 
 
 ################################################################################################## MAIN LOGIC
+
+# Update GRUB & btrfs to latest version
+sudo pacman -Syu grub btrfs
 
 # Backup GRUB configuration
 backup_grub_configuration
@@ -249,3 +240,12 @@ install_additional_packages
 
 # Backup Configuration for Snapper / Timeshift
 backup_configuration "$selected_tool"
+
+# Update GRUB configuration
+if command_exists grub-mkconfig; then
+    print_message "$CYAN" "Updating GRUB configuration..."
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+    print_message "$GREEN" "GRUB configuration updated."
+else
+    print_message "$YELLOW" "grub-mkconfig not found. Skipping GRUB configuration update."
+fi
