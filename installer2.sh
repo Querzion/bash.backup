@@ -147,24 +147,39 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Function to handle configuration based on the application
+# Function to handle Snapper configuration
 configure_snapper() {
     if command_exists snapper; then
         print_message "$CYAN" "Configuring Snapper..."
 
-        # Unmount and remove old snapshots
-        print_message "$CYAN" "Unmounting and removing old snapshots..."
-        sudo umount /.snapshots/ || true
-        sudo rm -rf /.snapshots/
+        # Ensure the .snapshots directory exists
+        local snapshots_dir="/.snapshots"
+        if [ ! -d "$snapshots_dir" ]; then
+            print_message "$CYAN" "Creating .snapshots directory..."
+            sudo mkdir -p "$snapshots_dir"
+            sudo chmod a+rx "$snapshots_dir"
+        fi
+
+        # Unmount and remove old snapshots if they exist
+        if mountpoint -q "$snapshots_dir"; then
+            print_message "$CYAN" "Unmounting old snapshots..."
+            sudo umount "$snapshots_dir" || true
+        fi
+        print_message "$CYAN" "Removing old snapshots..."
+        sudo rm -rf "$snapshots_dir"
 
         # Mount all filesystems
         print_message "$CYAN" "Mounting all filesystems..."
         sudo mount -a
 
-        # Create snapper config for root
-        sudo snapper -c root create-config /
+        # Create Snapper config for root
+        if ! sudo snapper -c root list &>/dev/null; then
+            print_message "$CYAN" "Creating Snapper configuration for root..."
+            sudo snapper -c root create-config /
+        fi
 
-        # Example configuration commands for snapper
+        # Set Snapper configuration parameters
+        print_message "$CYAN" "Configuring Snapper settings..."
         sudo snapper -c root set-config "NUMBER_CLEANUP=yes"
         sudo snapper -c root set-config "TIMELINE_CREATE=yes"
         sudo snapper -c root set-config "TIMELINE_MIN_AGE=3600"       # 1 hour
@@ -172,11 +187,11 @@ configure_snapper() {
         sudo snapper -c root set-config "TIMELINE_LIMIT_DAILY=7"      # 7 daily snapshots
         sudo snapper -c root set-config "TIMELINE_LIMIT_WEEKLY=4"     # 4 weekly snapshots
         sudo snapper -c root set-config "TIMELINE_LIMIT_MONTHLY=5"    # 5 monthly snapshots
-        sudo snapper -c root set-config "TIMELINE_LIMIT_YEARLY=4"     # 4 yearly snapshot
+        sudo snapper -c root set-config "TIMELINE_LIMIT_YEARLY=4"     # 4 yearly snapshots
 
         # Set permissions for Snapper directory
         print_message "$CYAN" "Setting permissions for .snapshots directory..."
-        sudo chmod a+rx /.snapshots/
+        sudo chmod a+rx "$snapshots_dir"
 
         # Enable and start Snapper timers
         print_message "$CYAN" "Enabling and starting Snapper timers..."
@@ -193,12 +208,18 @@ configure_snapper() {
         print_message "$CYAN" "Listing snapshots..."
         sudo snapper -c root list
 
-        # Start and enable GRUB-BTRFS service
-        print_message "$CYAN" "Starting and enabling GRUB-BTRFS service..."
-        sudo systemctl start grub-btrfs.path
-        sudo systemctl enable grub-btrfs.path
+        # Check if GRUB-BTRFS is installed
+        if command_exists grub-btrfs; then
+            # Start and enable GRUB-BTRFS service
+            print_message "$CYAN" "Starting and enabling GRUB-BTRFS service..."
+            sudo systemctl start grub-btrfs.path
+            sudo systemctl enable grub-btrfs.path
+        else
+            print_message "$YELLOW" "GRUB-BTRFS is not installed. Skipping GRUB-BTRFS service configuration."
+        fi
 
         print_message "$GREEN" "Snapper configuration complete."
+        print_message "$PURPLE" "Initial Snapper snapshot created."
 
     else
         print_message "$RED" "Snapper is not installed. Exiting."
