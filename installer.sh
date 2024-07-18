@@ -118,7 +118,7 @@ manage_backup() {
     }
 
     # Ask user for backup management tool choice
-    read -p "Choose backup management tool (s for snapper / t for timeshift) [default: $default_choice]: " choice
+    read -p "$(print_message "$PURPLE" "Choose backup management tool (s for snapper / t for timeshift) [default: $default_choice]: ")" choice
 
     # Set choice to default if empty
     choice=${choice:-$default_choice}
