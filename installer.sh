@@ -93,11 +93,9 @@ manage_backup() {
     if [ "$filesystem" == "btrfs" ]; then
         FILES="$BASE/files"
         default_choice="s"
-        tool="snapper"
     else
         FILES="$BASE/files"
         default_choice="t"
-        tool="timeshift"
     fi
 
     # Function to create directory $BASH if it doesn't exist
@@ -140,6 +138,7 @@ manage_backup() {
     # Return the selected tool for further processing
     echo "$tool"
 }
+
 
 ################################################################################################## CHECK INSTALLATION FUNCTION
 
@@ -190,18 +189,14 @@ selected_tool=$(manage_backup)
 packages_txt
 
 # Backup Configuration for Snapper / Timeshift
-case "$selected_tool" in
-    "snapper")
-        configure_snapper
-        ;;
-    "timeshift")
-        configure_timeshift
-        ;;
-    *)
-        print_message "$RED" "No valid backup tool selected. Exiting."
-        exit 1
-        ;;
-esac
+if command_exists snapper; then
+    configure_snapper
+elif command_exists timeshift; then
+    configure_timeshift
+else
+    print_message "$RED" "No valid backup tool installed. Exiting."
+    exit 1
+fi
 
 # Update GRUB configuration
 if command_exists grub-mkconfig; then
