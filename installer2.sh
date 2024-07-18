@@ -245,6 +245,27 @@ configure_timeshift() {
     fi
 }
 
+################################################################################################## MODIFY SUDOERS FILE
+
+# Function to uncomment the %wheel group in sudoers file
+uncomment_sudoers_wheel() {
+    local sudoers_file="/etc/sudoers"
+    
+    # Backup the sudoers file before making changes
+    sudo cp "$sudoers_file" "$sudoers_file.bak"
+    
+    # Use sed to uncomment the line
+    sudo sed -i '/^# %wheel ALL=(ALL:ALL) ALL/s/^# //' "$sudoers_file"
+    
+    # Check if sed command was successful
+    if [ $? -eq 0 ]; then
+        print_message "$GREEN" "Successfully uncommented the line in $sudoers_file"
+    else
+        print_message "$RED" "Failed to uncomment the line in $sudoers_file"
+        # Restore from backup in case of failure
+        sudo mv "$sudoers_file.bak" "$sudoers_file"
+    fi
+}
 
 ################################################################################################## MAIN LOGIC
 
@@ -259,6 +280,9 @@ selected_tool=$(manage_backup)
 
 # Install Packages from $BASH/packages.txt
 packages_txt
+
+# Uncomment wheel group in sudoers file
+uncomment_sudoers_wheel
 
 # Backup Configuration for Snapper / Timeshift
 if command_exists snapper; then
