@@ -1,1 +1,1 @@
-
+"pacman" "snapper" # Snapper is a tool for managing snapshots on Btrfs filesystems
