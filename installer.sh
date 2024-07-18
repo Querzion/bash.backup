@@ -141,7 +141,6 @@ manage_backup() {
     echo "$tool"
 }
 
-
 ################################################################################################## CHECK INSTALLATION FUNCTION
 
 # Function to check if a command exists
@@ -149,42 +148,28 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Function to handle configuration based on the application
-backup_configuration() {
-    local tool=$1
-
-    if [ "$tool" == "snapper" ]; then
-        if command_exists snapper; then
-            print_message "$CYAN" "Configuring Snapper..."
-            # Example configuration commands for snapper
-            snapper create-config root
-            snapper set-config NUMBER_CLEANUP="yes"
-
-            # Additional configurations for snapper
-            # Adjust according to your specific setup needs
-
-            print_message "$GREEN" "Snapper configuration complete."
-        else
-            print_message "$RED" "Snapper is not installed. Exiting."
-            exit 1
-        fi
-    elif [ "$tool" == "timeshift" ]; then
-        if command_exists timeshift; then
-            print_message "$CYAN" "Configuring Timeshift..."
-            # Example configuration commands for timeshift
-            timeshift --create --comments "Initial backup"
-            timeshift --schedule daily
-
-            # Additional configurations for Timeshift
-            # Adjust according to your specific setup needs
-
-            print_message "$GREEN" "Timeshift configuration complete."
-        else
-            print_message "$RED" "Timeshift is not installed. Exiting."
-            exit 1
-        fi
+# Function to configure Snapper
+configure_snapper() {
+    if command_exists snapper; then
+        print_message "$CYAN" "Configuring Snapper..."
+        snapper create-config root
+        snapper set-config NUMBER_CLEANUP="yes"
+        print_message "$GREEN" "Snapper configuration complete."
     else
-        print_message "$RED" "Invalid tool specified. Exiting."
+        print_message "$RED" "Snapper is not installed. Exiting."
+        exit 1
+    fi
+}
+
+# Function to configure Timeshift
+configure_timeshift() {
+    if command_exists timeshift; then
+        print_message "$CYAN" "Configuring Timeshift..."
+        timeshift --create --comments "Initial backup"
+        timeshift --schedule daily
+        print_message "$GREEN" "Timeshift configuration complete."
+    else
+        print_message "$RED" "Timeshift is not installed. Exiting."
         exit 1
     fi
 }
@@ -205,12 +190,18 @@ selected_tool=$(manage_backup)
 packages_txt
 
 # Backup Configuration for Snapper / Timeshift
-if [ -n "$selected_tool" ]; then
-    backup_configuration "$selected_tool"
-else
-    print_message "$RED" "No valid backup tool selected. Exiting."
-    exit 1
-fi
+case "$selected_tool" in
+    "snapper")
+        configure_snapper
+        ;;
+    "timeshift")
+        configure_timeshift
+        ;;
+    *)
+        print_message "$RED" "No valid backup tool selected. Exiting."
+        exit 1
+        ;;
+esac
 
 # Update GRUB configuration
 if command_exists grub-mkconfig; then
