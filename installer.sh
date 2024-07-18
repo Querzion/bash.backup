@@ -161,12 +161,12 @@ configure_snapper() {
         # Additional Snapper configuration
         sudo snapper -c root set-config "NUMBER_CLEANUP=yes"
         sudo snapper -c root set-config "TIMELINE_CREATE=yes"
-        sudo snapper -c root set-config "TIMELINE_MIN_AGE=1800"
-        sudo snapper -c root set-config "TIMELINE_LIMIT_HOURLY=5"
-        sudo snapper -c root set-config "TIMELINE_LIMIT_DAILY=10"
-        sudo snapper -c root set-config "TIMELINE_LIMIT_WEEKLY=0"
-        sudo snapper -c root set-config "TIMELINE_LIMIT_MONTHLY=10"
-        sudo snapper -c root set-config "TIMELINE_LIMIT_YEARLY=30"
+        sudo snapper -c root set-config "TIMELINE_MIN_AGE=3600"       # 1 hour
+        sudo snapper -c root set-config "TIMELINE_LIMIT_HOURLY=2"     # 2 hourly snapshots
+        sudo snapper -c root set-config "TIMELINE_LIMIT_DAILY=7"      # 7 daily snapshots
+        sudo snapper -c root set-config "TIMELINE_LIMIT_WEEKLY=4"     # 4 weekly snapshots
+        sudo snapper -c root set-config "TIMELINE_LIMIT_MONTHLY=5"    # 3 monthly snapshots
+        sudo snapper -c root set-config "TIMELINE_LIMIT_YEARLY=4"     # 1 yearly snapshot
 
         print_message "$GREEN" "Snapper configuration complete."
     else
