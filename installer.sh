@@ -205,7 +205,12 @@ selected_tool=$(manage_backup)
 packages_txt
 
 # Backup Configuration for Snapper / Timeshift
-backup_configuration "$selected_tool"
+if [ -n "$selected_tool" ]; then
+    backup_configuration "$selected_tool"
+else
+    print_message "$RED" "No valid backup tool selected. Exiting."
+    exit 1
+fi
 
 # Update GRUB configuration
 if command_exists grub-mkconfig; then
