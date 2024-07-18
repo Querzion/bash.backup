@@ -9,7 +9,7 @@ chmod +x -r $HOME/bash.backup
 ```bash
 sh $HOME/bash.backup/installer.sh
 ```
-#### Main Logic
+### Main Logic
   -  Updates GRUB and Btrfs to the latest versions.
   -  Backs up GRUB configuration.
   -  Manages the backup tool selection and installs the required packages.
