@@ -34,6 +34,28 @@ print_message() {
 }
 
 
+################################################################################################## BACKUP GRUB CONFIGURATION
+
+# Function to backup GRUB configuration
+backup_grub_configuration() {
+    if command_exists grub-mkconfig; then
+        local grub_cfg="/boot/grub/grub.cfg"
+        local grub_backup="/boot/grub/grub.cfg.bak"
+
+        # Backup the current GRUB configuration file
+        if [ -f "$grub_cfg" ]; then
+            print_message "$CYAN" "Backing up GRUB configuration to $grub_backup..."
+            sudo cp "$grub_cfg" "$grub_backup"
+            print_message "$GREEN" "GRUB configuration backup complete."
+        else
+            print_message "$YELLOW" "GRUB configuration file not found. Skipping backup."
+        fi
+    else
+        print_message "$YELLOW" "grub-mkconfig not found. Skipping GRUB configuration backup."
+    fi
+}
+
+
 ################################################################################################## INSTALLATION FUNCTIONS
 
 packages_txt() {
@@ -127,6 +149,37 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Function to install and configure additional packages
+install_additional_packages() {
+    local packages_file="$BASH/packages.txt"
+    local package_manager
+
+    while IFS= read -r line; do
+        # Skip comments and empty lines
+        [[ "$line" =~ ^#.*$ ]] || [[ -z "$line" ]] && continue
+
+        # Extract package manager and package
+        package_manager=$(echo "$line" | awk -F'"' '{print $2}')
+        package=$(echo "$line" | awk -F'"' '{print $4}')
+
+        # Install the package using the package manager
+        case "$package_manager" in
+            "pacman")
+                print_message "$CYAN" "Installing $package using pacman..."
+                sudo pacman -S --noconfirm "$package"
+                ;;
+            "yay")
+                print_message "$CYAN" "Installing $package using yay..."
+                yay -S --noconfirm "$package"
+                ;;
+            *)
+                print_message "$RED" "Unsupported package manager: $package_manager"
+                exit 1
+                ;;
+        esac
+    done < "$packages_file"
+}
+
 # Function to handle configuration based on the application
 backup_configuration() {
     local tool=$1
@@ -137,6 +190,10 @@ backup_configuration() {
             # Example configuration commands for snapper
             snapper create-config root
             snapper set-config NUMBER_CLEANUP="yes"
+
+            # Additional configurations for snapper
+            # Adjust according to your specific setup needs
+
             print_message "$GREEN" "Snapper configuration complete."
         else
             print_message "$RED" "Snapper is not installed. Exiting."
@@ -148,6 +205,10 @@ backup_configuration() {
             # Example configuration commands for timeshift
             timeshift --create --comments "Initial backup"
             timeshift --schedule daily
+
+            # Additional configurations for Timeshift
+            # Adjust according to your specific setup needs
+
             print_message "$GREEN" "Timeshift configuration complete."
         else
             print_message "$RED" "Timeshift is not installed. Exiting."
@@ -157,15 +218,34 @@ backup_configuration() {
         print_message "$RED" "Invalid tool specified. Exiting."
         exit 1
     fi
+
+    # Update GRUB configuration
+    if command_exists grub-mkconfig; then
+        local grub_cfg="/boot/grub/grub.cfg"
+
+        # Update GRUB configuration
+        print_message "$CYAN" "Updating GRUB configuration..."
+        sudo grub-mkconfig -o "$grub_cfg"
+        print_message "$GREEN" "GRUB configuration updated."
+    else
+        print_message "$YELLOW" "grub-mkconfig not found. Skipping GRUB configuration update."
+    fi
 }
 
+
 ################################################################################################## MAIN LOGIC
+
+# Backup GRUB configuration
+backup_grub_configuration
 
 # Snapper / Timeshift Packages.txt
 selected_tool=$(manage_backup)
 
 # Install Packages from $BASH/packages.txt
 packages_txt
+
+# Install Additional Packages
+install_additional_packages
 
 # Backup Configuration for Snapper / Timeshift
 backup_configuration "$selected_tool"
