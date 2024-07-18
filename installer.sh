@@ -149,37 +149,6 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Function to install and configure additional packages
-install_additional_packages() {
-    local packages_file="$BASH/packages.txt"
-    local package_manager
-
-    while IFS= read -r line; do
-        # Skip comments and empty lines
-        [[ "$line" =~ ^#.*$ ]] || [[ -z "$line" ]] && continue
-
-        # Extract package manager and package
-        package_manager=$(echo "$line" | awk -F'"' '{print $2}')
-        package=$(echo "$line" | awk -F'"' '{print $4}')
-
-        # Install the package using the package manager
-        case "$package_manager" in
-            "pacman")
-                print_message "$CYAN" "Installing $package using pacman..."
-                sudo pacman -S --noconfirm "$package"
-                ;;
-            "yay")
-                print_message "$CYAN" "Installing $package using yay..."
-                yay -S --noconfirm "$package"
-                ;;
-            *)
-                print_message "$RED" "Unsupported package manager: $package_manager"
-                exit 1
-                ;;
-        esac
-    done < "$packages_file"
-}
-
 # Function to handle configuration based on the application
 backup_configuration() {
     local tool=$1
@@ -234,9 +203,6 @@ selected_tool=$(manage_backup)
 
 # Install Packages from $BASH/packages.txt
 packages_txt
-
-# Install Additional Packages
-install_additional_packages
 
 # Backup Configuration for Snapper / Timeshift
 backup_configuration "$selected_tool"
