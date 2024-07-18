@@ -151,8 +151,23 @@ command_exists() {
 configure_snapper() {
     if command_exists snapper; then
         print_message "$CYAN" "Configuring Snapper..."
-        snapper create-config root
-        snapper set-config NUMBER_CLEANUP="yes"
+
+        # Check if the root subvolume exists, create if it doesn't
+        if ! sudo snapper -c root list-configs &>/dev/null; then
+            print_message "$YELLOW" "Snapper root config does not exist. Creating it..."
+            sudo snapper -c root create-config /
+        fi
+
+        # Additional Snapper configuration
+        sudo snapper -c root set-config "NUMBER_CLEANUP=yes"
+        sudo snapper -c root set-config "TIMELINE_CREATE=yes"
+        sudo snapper -c root set-config "TIMELINE_MIN_AGE=1800"
+        sudo snapper -c root set-config "TIMELINE_LIMIT_HOURLY=5"
+        sudo snapper -c root set-config "TIMELINE_LIMIT_DAILY=10"
+        sudo snapper -c root set-config "TIMELINE_LIMIT_WEEKLY=0"
+        sudo snapper -c root set-config "TIMELINE_LIMIT_MONTHLY=10"
+        sudo snapper -c root set-config "TIMELINE_LIMIT_YEARLY=30"
+
         print_message "$GREEN" "Snapper configuration complete."
     else
         print_message "$RED" "Snapper is not installed. Exiting."
