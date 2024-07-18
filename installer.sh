@@ -169,19 +169,28 @@ configure_snapper() {
         sudo snapper -c root set-config "TIMELINE_LIMIT_YEARLY=4"     # 1 yearly snapshot
 
         print_message "$GREEN" "Snapper configuration complete."
+
+        # Create an initial snapshot
+        sudo snapper -c root create --description "Initial snapshot"
+        print_message "$PURPLE" "Initial Snapper snapshot created."
     else
         print_message "$RED" "Snapper is not installed. Exiting."
         exit 1
     fi
 }
 
-# Function to configure Timeshift
 configure_timeshift() {
     if command_exists timeshift; then
         print_message "$CYAN" "Configuring Timeshift..."
-        timeshift --create --comments "Initial backup"
-        timeshift --schedule daily
+        # Example configuration commands for timeshift
+        sudo timeshift --create --comments "Initial backup"
+        sudo timeshift --schedule daily
+
         print_message "$GREEN" "Timeshift configuration complete."
+
+        # Create an initial snapshot
+        sudo timeshift --create --comments "Initial snapshot"
+        print_message "$PURPLE" "Initial Timeshift snapshot created."
     else
         print_message "$RED" "Timeshift is not installed. Exiting."
         exit 1
