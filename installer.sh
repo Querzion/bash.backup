@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 ################################################################################################## FILE & FOLDER PATHS
 
 # Location
-APPLICATION="snapper"
+APPLICATION="backup"
 BASE="$HOME/bash.$APPLICATION"
 FILES="$BASE/files"
 APP_LIST="$FILES/packages.txt"
@@ -62,6 +62,110 @@ packages_txt() {
 }
 
 
+################################################################################################## MAIN FUNCTION
+
+# Main function to manage backup based on filesystem type
+manage_backup() {
+    local filesystem=$(df -T / | awk 'NR==2 {print $2}')
+
+    if [ "$filesystem" == "btrfs" ]; then
+        FILES="$BASE/files"
+        default_choice="s"
+        tool="snapper"
+    else
+        FILES="$BASE/files"
+        default_choice="t"
+        tool="timeshift"
+    fi
+
+    # Function to create directory $BASH if it doesn't exist
+    setup_bash_directory() {
+        if [ ! -d "$BASH" ]; then
+            mkdir -p "$BASH"
+            print_message "$GREEN" "Created directory: $BASH"
+        else
+            print_message "$YELLOW" "Directory already exists: $BASH"
+        fi
+    }
+
+    # Function to export packages.txt from specified source file
+    export_packages_txt() {
+        local source_file="$1"
+        cp "$FILES/$source_file" "$BASH/packages.txt"
+        print_message "$GREEN" "Exported $source_file to $BASH/packages.txt"
+    }
+
+    # Ask user for backup management tool choice
+    read -p "Choose backup management tool (s for snapper / t for timeshift) [default: $default_choice]: " choice
+
+    # Set choice to default if empty
+    choice=${choice:-$default_choice}
+
+    # Validate user choice and proceed with exporting the packages file
+    if [ "$choice" == "s" ]; then
+        setup_bash_directory
+        export_packages_txt "snapper.txt"
+        tool="snapper"
+    elif [ "$choice" == "t" ]; then
+        setup_bash_directory
+        export_packages_txt "timeshift.txt"
+        tool="timeshift"
+    else
+        print_message "$RED" "Invalid choice. Exiting."
+        exit 1
+    fi
+
+    # Return the selected tool for further processing
+    echo "$tool"
+}
+
+
+################################################################################################## CHECK INSTALLATION FUNCTION
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to handle configuration based on the application
+backup_configuration() {
+    local tool=$1
+
+    if [ "$tool" == "snapper" ]; then
+        if command_exists snapper; then
+            print_message "$CYAN" "Configuring Snapper..."
+            # Example configuration commands for snapper
+            snapper create-config root
+            snapper set-config NUMBER_CLEANUP="yes"
+            print_message "$GREEN" "Snapper configuration complete."
+        else
+            print_message "$RED" "Snapper is not installed. Exiting."
+            exit 1
+        fi
+    elif [ "$tool" == "timeshift" ]; then
+        if command_exists timeshift; then
+            print_message "$CYAN" "Configuring Timeshift..."
+            # Example configuration commands for timeshift
+            timeshift --create --comments "Initial backup"
+            timeshift --schedule daily
+            print_message "$GREEN" "Timeshift configuration complete."
+        else
+            print_message "$RED" "Timeshift is not installed. Exiting."
+            exit 1
+        fi
+    else
+        print_message "$RED" "Invalid tool specified. Exiting."
+        exit 1
+    fi
+}
+
 ################################################################################################## MAIN LOGIC
 
+# Snapper / Timeshift Packages.txt
+selected_tool=$(manage_backup)
+
+# Install Packages from $BASH/packages.txt
 packages_txt
+
+# Backup Configuration for Snapper / Timeshift
+backup_configuration "$selected_tool"
