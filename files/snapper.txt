@@ -1,3 +1,4 @@
+"pacman" "btrfs" # Partition System
 "pacman" "btrfs-progs" # Tools for managing Btrfs filesystems.
 "pacman" "grub-btrfs" # GRUB support for Btrfs.
 "pacman" "snapper" # Snapper is a tool for managing snapshots on Btrfs filesystems.
