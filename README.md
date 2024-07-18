@@ -1,5 +1,5 @@
 # bash.backup
-Backup tool (Snapper|Timeshift) installer & configuration.
+Backup tool (Snapper|Timeshift) installer & configuration with snapshots on a daily basis.
 ```bash
 git clone https://github.com/Querzion/bash.backup.git $HOME
 ```
