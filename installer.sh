@@ -153,10 +153,13 @@ configure_snapper() {
         print_message "$CYAN" "Configuring Snapper..."
 
         # Check if the root subvolume exists, create if it doesn't
-        if ! sudo snapper -c root list-configs &>/dev/null; then
-            print_message "$YELLOW" "Snapper root config does not exist. Creating it..."
-            sudo snapper -c root create-config /
-        fi
+        #if ! sudo snapper -c root list-configs &>/dev/null; then
+        #    print_message "$YELLOW" "Snapper root config does not exist. Creating it..."
+        #    sudo snapper -c root create-config /
+        #fi
+
+        # Create snapper config for root
+        sudo snapper -c root create-config /
 
         # Additional Snapper configuration
         sudo snapper -c root set-config "NUMBER_CLEANUP=yes"
