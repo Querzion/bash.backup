@@ -304,3 +304,7 @@ if command_exists grub-mkconfig; then
 else
     print_message "$YELLOW" "grub-mkconfig not found. Skipping GRUB configuration update."
 fi
+
+
+print_message "$PURPLE" "Installation of Snapshot Tool is now done."
+print_message "$CYAN" "A Reboot is Recommended as soon as possible.."
