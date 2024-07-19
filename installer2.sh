@@ -152,14 +152,9 @@ configure_snapper() {
     if command_exists snapper; then
         print_message "$CYAN" "Configuring Snapper..."
 
-        # Ensure the .snapshots directory exists
+        # Directory Location
         local snapshots_dir="/.snapshots"
-        if [ ! -d "$snapshots_dir" ]; then
-            print_message "$CYAN" "Creating .snapshots directory..."
-            sudo mkdir -p "$snapshots_dir"
-            sudo chmod a+rx "$snapshots_dir"
-        fi
-
+      
         # Unmount and remove old snapshots if they exist
         if mountpoint -q "$snapshots_dir"; then
             print_message "$CYAN" "Unmounting old snapshots..."
@@ -167,6 +162,13 @@ configure_snapper() {
         fi
         print_message "$CYAN" "Removing old snapshots..."
         sudo rm -rf "$snapshots_dir"
+
+        # Ensure the .snapshots directory exists
+        if [ ! -d "$snapshots_dir" ]; then
+            print_message "$CYAN" "Creating .snapshots directory..."
+            sudo mkdir -p "$snapshots_dir"
+            sudo chmod a+rx "$snapshots_dir"
+        fi
 
         # Mount all filesystems
         print_message "$CYAN" "Mounting all filesystems..."
