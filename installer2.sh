@@ -204,7 +204,7 @@ configure_snapper() {
 
         # Create an initial timeline snapshot
         print_message "$CYAN" "Creating initial timeline snapshot..."
-        sudo snapper -c root create -c timeline --description "AfterInstall"
+        sudo snapper -c root create -c timeline --description "Backup Tool Installation Done."
 
         # List snapshots
         print_message "$CYAN" "Listing snapshots..."
