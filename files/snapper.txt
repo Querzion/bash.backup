@@ -1,5 +1,6 @@
 "pacman" "btrfs-progs" # Tools for managing Btrfs filesystems.
-"yay" "grub-btrfs-git" # GRUB support for Btrfs.
 "pacman" "snapper" # Snapper is a tool for managing snapshots on Btrfs filesystems.
 "pacman" "snap-pac" # Integration for managing snapshots with package installations.
+"yay" "snap-pac-grub" # GRUB Snap for integrating snaps into GRUB (from AUR)
 "yay" "snapper-gui-git" # Snapper GUI for managing Btrfs snapshots (from AUR)
+#"yay" "grub-btrfs-git" # GRUB Btrfs integration (from AUR)
